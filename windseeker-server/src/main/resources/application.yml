@@ -1,0 +1,9 @@
+server:
+  port: 7600
+spring:
+  application:
+    name: "azzinoth-server"
+  datasource:
+    platform: h2
+    schema: classpath:schema.sql
+
