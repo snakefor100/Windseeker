@@ -14,25 +14,21 @@ public class AgentClassLoader extends URLClassLoader {
 
     /**
      * 加载类(双亲委派)
-     * @param name
-     * @param resolve
-     * @return
-     * @throws ClassNotFoundException
      */
     @Override
     public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         final Class<?> loadedClass = findLoadedClass(name);
-        if(loadedClass != null){
+        if (loadedClass != null) {
             return loadedClass;
         }
         try {
             Class<?> aClass = findClass(name);
-            if(resolve){
+            if (resolve) {
                 resolveClass(aClass);
             }
             return aClass;
-        }catch (Exception e){
-            return super.loadClass(name,resolve);
+        } catch (Exception e) {
+            return super.loadClass(name, resolve);
         }
     }
 }

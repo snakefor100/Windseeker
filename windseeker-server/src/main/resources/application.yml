@@ -7,3 +7,10 @@ spring:
     platform: h2
     schema: classpath:schema.sql
 
+
+windseeker:
+  serverConfig:
+    connectTime: 6000
+    agentJarUrl: "/Users/didi/workspace/Windseeker/windseeker-agent/target/windseeker-agent-jar-with-dependencies.jar"
+    coreJarUrl: "/Users/didi/workspace/Windseeker/windseeker-core/target/windseeker-core-jar-with-dependencies.jar"
+    WsServerLauncherClassUrl: "com.junlong.windseeker.server.WindSeekerServer"

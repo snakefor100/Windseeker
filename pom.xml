@@ -17,6 +17,7 @@
         <module>windseeker-server</module>
         <module>windseeker-agent</module>
         <module>windseeker-common</module>
+        <module>windseeker-core</module>
     </modules>
     <packaging>pom</packaging>
     <repositories>
