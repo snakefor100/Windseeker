@@ -69,4 +69,7 @@ public class Configure implements Serializable{
     public void setCoreJarUrl(String coreJarUrl) {
         this.coreJarUrl = coreJarUrl;
     }
+
+
+
 }
