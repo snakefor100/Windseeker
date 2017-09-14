@@ -20,6 +20,10 @@ import java.util.jar.JarFile;
  */
 public class WsClassUtils {
 
+    public static void main(String[] args) {
+        System.out.println(111);
+    }
+
     /**
      * 扫描目标包获取所有Class
      *
