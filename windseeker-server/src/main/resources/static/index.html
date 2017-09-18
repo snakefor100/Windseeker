@@ -26,127 +26,42 @@
 </div>
 <script type="text/javascript">
     //https://www.hcharts.cn/demo/highcharts/dynamic-update/dark-unica
-    function startNet() {
-        if ("WebSocket" in window)
-        {
-            alert("您的浏览器支持 WebSocket!");
+    function connectServer() {
+        try {
+            var ws;
+            if ("WebSocket" in window) {
+                ws = new WebSocket("ws://localhost:9999");
+            }
+            else if ("MozWebSocket" in window) {
+                ws = new MozWebSocket("ws://localhost:9999");
+            }
 
-            // 打开一个 web socket
-            var ws = new WebSocket("ws://192.168.1.107:8156");
-            ws.send("发送数据");
-            ws.onopen = function()
-            {
+            SocketCreated = true;
+            isUserloggedout = false;
+
+            ws.onopen = function () {
                 // Web Socket 已连接上，使用 send() 方法发送数据
                 ws.send("发送数据");
                 alert("数据发送中...");
             };
 
-            ws.onmessage = function (evt)
-            {
+            ws.onmessage = function (evt) {
                 var received_msg = evt.data;
                 alert("数据已接收...");
             };
 
-            ws.onclose = function()
-            {
+            ws.onclose = function () {
                 // 关闭 websocket
                 alert("连接已关闭...");
             };
         }
-
-        else
-        {
-            // 浏览器不支持 WebSocket
-            alert("您的浏览器不支持 WebSocket!");
+        catch (ex) {
+            Log(ex, "ERROR");
+            ret
         }
-    }
-    $(function () {
-        Highcharts.setOptions({
-                                  global: {
-                                      useUTC: false
-                                  }
-                              });
-        function activeLastPointToolip(chart) {
-            var points = chart.series[0].points;
-            chart.tooltip.refresh(points[points.length - 1]);
-        }
+        $(function () {
 
-        $('#container').highcharts({
-                                       chart: {
-                                           type: 'spline',
-                                           animation: Highcharts.svg, // don't animate in old IE
-                                           marginRight: 10,
-                                           events: {
-                                               load: function () {
-                                                   // set up the updating of the chart each second
-                                                   var series = this.series[0],
-                                                           chart = this;
-                                                   setInterval(function () {
-
-                                                       var nowTime = (new Date()).getTime();
-                                                       var startTime = (new Date()).getTime() - 1000
-//                            $.post("/azzinoth/queryMethodPerformance",)
-                                                       var x = (new Date()).getTime(), // current time
-                                                               y = Math.random();
-                                                       series.addPoint([x, y], true, true);
-                                                       activeLastPointToolip(chart)
-                                                   }, 1000);
-                                               }
-                                           }
-                                       },
-                                       title: {
-                                           text: '动态模拟实时数据'
-                                       },
-                                       xAxis: {
-                                           type: 'datetime',
-                                           tickPixelInterval: 150
-                                       },
-                                       yAxis: {
-                                           title: {
-                                               text: '值'
-                                           },
-                                           plotLines: [{
-                                               value: 0,
-                                               width: 1,
-                                               color: '#808080'
-                                           }]
-                                       },
-                                       tooltip: {
-                                           formatter: function () {
-                                               return '<b>' + this.series.name + '</b><br/>' +
-                                                      Highcharts.dateFormat('%Y-%m-%d %H:%M:%S',
-                                                                            this.x) + '<br/>' +
-                                                      Highcharts.numberFormat(this.y, 2);
-                                           }
-                                       },
-                                       legend: {
-                                           enabled: false
-                                       },
-                                       exporting: {
-                                           enabled: false
-                                       },
-                                       //初始化
-                                       series: [{
-                                           name: '随机数据',
-                                           data: (function () {
-                                               // generate an array of random data
-                                               var data = [],
-                                                       time = (new Date()).getTime(),
-                                                       i;
-                                               for (i = -19; i <= 0; i += 1) {
-                                                   data.push({
-                                                                 x: time + i * 1000,
-                                                                 y: Math.random()
-                                                             });
-                                               }
-                                               return data;
-                                           }())
-                                       }]
-                                   }, function (c) {
-            activeLastPointToolip(c)
         });
-
-    });
 
 </script>
 </body>

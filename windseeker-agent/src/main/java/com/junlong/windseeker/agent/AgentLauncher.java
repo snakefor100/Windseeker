@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.junlong.windseeker.domain.Configure;
 
 import java.lang.instrument.Instrumentation;
-import java.util.jar.JarFile;
 
 /**
  * Created by niujunlong on 17/9/4.
@@ -38,6 +37,7 @@ public class AgentLauncher {
             Configure configure = objectMapper.readValue(args, Configure.class);
             System.out.println(9999999);
             System.out.println(configure.getCoreJarUrl());
+
 //            //加载core包到类加载器
 //            final ClassLoader classLoader = loadWSClassLoader(configure.getCoreJarUrl());
 //            //windseekerService Class全路径
