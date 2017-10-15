@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="debug">
+    <Properties>
+        <Property name="log-path">/tmp/windseeker-server
+        </Property>
+    </Properties>
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT">
+        </Console>
+        <RollingRandomAccessFile name="biz-log-appender"
+                                 fileName="${log-path}/windseeker-server-biz.log"
+                                 immediateFlush="true"
+                                 filePattern="${log-path}/windseeker-server-biz.log.%d{yyyyMMdd}">
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"
+                                           modulate="true"/>
+            </Policies>
+        </RollingRandomAccessFile>
+    </Appenders>
+    <Loggers>
+        <Root level="INFO" includeLocation="true">
+            <AppenderRef ref="console"/>
+            <AppenderRef ref="biz-log-appender"/>
+        </Root>
+    </Loggers>
+</Configuration>

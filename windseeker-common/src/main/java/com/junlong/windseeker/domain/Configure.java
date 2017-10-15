@@ -13,6 +13,16 @@ public class Configure implements Serializable{
     private String agentJarUrl;
     private String coreJarUrl;
     private String WsServerLauncherClassUrl;
+    private String sessionId;
+
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+    }
 
     public String getWsServerLauncherClassUrl() {
         return WsServerLauncherClassUrl;

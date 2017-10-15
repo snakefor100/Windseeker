@@ -1,19 +1,35 @@
 package com.junlong.windseeker.agent;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.junlong.windseeker.domain.Configure;
+import com.junlong.windseeker.server.netty.WebSocketService;
+import com.junlong.windseeker.utils.JsonUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
 import java.lang.instrument.Instrumentation;
+import java.net.JarURLConnection;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.util.Enumeration;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * Created by niujunlong on 17/9/4.
  */
 public class AgentLauncher {
-    // 全局持有classloader用于隔离greys实现
+    private static final Logger LOG = LoggerFactory.getLogger(AgentLauncher.class);
+
+
+    // 全局持有classloader
     private static volatile ClassLoader wsClassLoader;
 
-
-    private final static ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * 随着监听程序一起启动的agent,暂不支持
@@ -26,7 +42,6 @@ public class AgentLauncher {
      * agent延后启动
      */
     public static void agentmain(String args, Instrumentation inst) {
-        System.out.println(args);
         attachAgent(args, inst);
     }
 
@@ -34,14 +49,26 @@ public class AgentLauncher {
     public static synchronized void attachAgent(String args, Instrumentation inst) {
 
         try {
-            Configure configure = objectMapper.readValue(args, Configure.class);
-            System.out.println(9999999);
-            System.out.println(configure.getCoreJarUrl());
+
+            Configure configure = JsonUtils.toObject(args, Configure.class);
 
 //            //加载core包到类加载器
 //            final ClassLoader classLoader = loadWSClassLoader(configure.getCoreJarUrl());
 //            //windseekerService Class全路径
 //            final Class<?> wsServerClass = classLoader.loadClass(configure.getWsServerLauncherClassUrl());
+//            LOG.info("查看args: {}",configure);
+//            LOG.info("查看string: {}",args);
+//
+//            LOG.info("加载jar: {}",configure.getCoreJarUrl());
+//
+//            LOG.info("查看类加载起:{}",JsonUtils.toString(classLoader));
+//            LOG.info("查看:{}",JsonUtils.toString(scanPackage(classLoader,"/")));
+
+            WebSocketService.start(configure,inst);
+
+//            wsServerClass.getMethod("start", Configure.class, Instrumentation.class).invoke(null, configure, inst);
+
+
 //            //windseekerService 实例
 //            final Object wsServerInstance = wsServerClass.getMethod("getInstance", Configure.class, Instrumentation.class).invoke(null, configure, inst);
 //            //windseeker server 是否启动

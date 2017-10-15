@@ -12,57 +12,59 @@
 
 </head>
 <body>
-<div class="container-fluid">
-    <div class="row-fluid">
-        <div class="span12">
-            <button onclick="startNet()">StartNet</button>
-        </div>
-    </div>
-    <div class="row-fluid">
-        <div class="span12">
-            <div id="container" style="min-width:400px;height:400px;"></div>
-        </div>
-    </div>
-</div>
 <script type="text/javascript">
-    //https://www.hcharts.cn/demo/highcharts/dynamic-update/dark-unica
-    function connectServer() {
-        try {
-            var ws;
-            if ("WebSocket" in window) {
-                ws = new WebSocket("ws://localhost:9999");
-            }
-            else if ("MozWebSocket" in window) {
-                ws = new MozWebSocket("ws://localhost:9999");
-            }
+    var socket;
+    if (!window.WebSocket) {
+        window.WebSocket = window.MozWebSocket;
+    }
+    if (window.WebSocket) {
+        socket = new WebSocket("ws://localhost:9999/ws");
+        socket.onmessage = function (event) {
+            var ta = document.getElementById('responseText');
+            ta.value = ta.value + '\n' + event.data
+        };
+        socket.onopen = function (event) {
+            var ta = document.getElementById('responseText');
+            ta.value = "连接开启!";
+            var obj = {}
+            obj.sessionId = "niuniu"
+            obj.content = "TestImpl"
+            obj.javaPid="12"
+            obj.targetIp="127.0.0.1"
+            obj.targetPort="9999"
+            obj.queryCommandEnum="SEARCH_CLASS"
+            socket.send(JSON.stringify(obj));
+        };
+        socket.onclose = function (event) {
+            var ta = document.getElementById('responseText');
+            ta.value = ta.value + "连接被关闭";
+        };
+    } else {
+        alert("你的浏览器不支持 WebSocket！");
+    }
 
-            SocketCreated = true;
-            isUserloggedout = false;
-
-            ws.onopen = function () {
-                // Web Socket 已连接上，使用 send() 方法发送数据
-                ws.send("发送数据");
-                alert("数据发送中...");
-            };
-
-            ws.onmessage = function (evt) {
-                var received_msg = evt.data;
-                alert("数据已接收...");
-            };
-
-            ws.onclose = function () {
-                // 关闭 websocket
-                alert("连接已关闭...");
-            };
+    function send(message) {
+        if (!window.WebSocket) {
+            return;
         }
-        catch (ex) {
-            Log(ex, "ERROR");
-            ret
+        if (socket.readyState == WebSocket.OPEN) {
+            socket.send(message);
+        } else {
+            alert("连接没有开启.");
         }
-        $(function () {
-
-        });
-
+    }
 </script>
+<form onsubmit="return false;">
+    <h3>WebSocket 聊天室：</h3>
+    <textarea id="responseText" style="width: 500px; height: 300px;"></textarea>
+    <br>
+    <input type="text" name="message" style="width: 300px" value="Welcome to www.baidu.com">
+    <input type="button" value="发送消息" onclick="send(this.form.message.value)">
+    <input type="button" onclick="javascript:document.getElementById('responseText').value=''"
+           value="清空聊天记录">
+</form>
+<br>
+<br>
+<a href="http://www.baidu.com/">www.baidu.com</a>
 </body>
 </html>

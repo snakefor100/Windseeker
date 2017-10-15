@@ -1,9 +1,11 @@
 package com.junlong.windseeker.utils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.junlong.windseeker.domain.Configure;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,14 +16,21 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by niujunlong on 17/9/5.
  */
 public class VirtuaMachineUtils {
+    private static final Logger LOG = LoggerFactory.getLogger(VirtuaMachineUtils.class);
+
+
     public static volatile Map<Integer, VirtualMachine> vmMap = new ConcurrentHashMap<Integer, VirtualMachine>();
-    private final static ObjectMapper objectMapper = new ObjectMapper();
+
 
     public static void loadAgent(Configure configure) throws IOException {
 
         VirtualMachine attach = null;
         VirtualMachineDescriptor vm = null;
         try {
+            if (vmMap.get(configure.getTargetPort()) != null) {
+                return;
+            }
+
             List<VirtualMachineDescriptor> virtualMachineDescriptorList = VirtualMachine.list();
             for (VirtualMachineDescriptor obj : virtualMachineDescriptorList) {
                 if (obj.id().equals(String.valueOf(configure.getJavaPid()))) {
@@ -35,10 +44,12 @@ public class VirtuaMachineUtils {
             } else {
                 attach = VirtualMachine.attach(vm);
             }
-
-            attach.loadAgent(configure.getAgentJarUrl(), objectMapper.writeValueAsString(configure));
+            LOG.info("传递agent参数", JsonUtils.toString(configure));
+            attach.loadAgent(configure.getAgentJarUrl(), JsonUtils.toString(configure));
+            vmMap.put(configure.getTargetPort(), attach);
         } catch (Exception e) {
             attach.detach();
+            LOG.error("VM load agent 出现异常", e);
         }
 
     }
@@ -51,7 +62,7 @@ public class VirtuaMachineUtils {
             }
             vm.detach();
         } catch (Exception e) {
-            System.out.println(e);
+            LOG.error("VM close agent 出现异常", e);
         }
     }
 }

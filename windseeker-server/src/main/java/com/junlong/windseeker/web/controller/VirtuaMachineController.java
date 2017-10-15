@@ -24,6 +24,7 @@ public class VirtuaMachineController {
     public BaseResponse attachTargetServer(String targetIp,int targetPort,int javaPid) throws Exception {
 
         Configure configure = new Configure();
+        configure.setSessionId("niuniu");
         configure.setJavaPid(javaPid);
         configure.setTargetIp(targetIp);
         configure.setTargetPort(targetPort);

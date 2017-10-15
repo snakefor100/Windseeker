@@ -16,7 +16,7 @@
         <build.file.encoding>UTF-8</build.file.encoding>
         <spring.boot.version>1.5.6.RELEASE</spring.boot.version>
         <plugin.maven-compiler>3.6.2</plugin.maven-compiler>
-        <project.build.jdk>1.7</project.build.jdk>
+        <project.build.jdk>1.8</project.build.jdk>
         <plugin.maven-surefire>2.20</plugin.maven-surefire>
     </properties>
 

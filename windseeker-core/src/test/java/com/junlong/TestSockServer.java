@@ -1,12 +1,8 @@
 package com.junlong;
 
-import com.junlong.windseeker.domain.Configure;
-import com.junlong.windseeker.server.WindSeekerServer;
-
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

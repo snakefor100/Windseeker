@@ -4,21 +4,100 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 类操作工具类
  * Created by niujunlong on 17/9/5.
  */
 public class WsClassUtils {
+
+
+    /**
+     * 翻译Modifier值
+     *
+     * @param mod modifier
+     * @return 翻译值
+     */
+    public static String tranModifier(int mod) {
+        StringBuilder sb = new StringBuilder();
+        if (Modifier.isAbstract(mod)) {
+            sb.append("abstract,");
+        }
+        if (Modifier.isFinal(mod)) {
+            sb.append("final,");
+        }
+        if (Modifier.isInterface(mod)) {
+            sb.append("interface,");
+        }
+        if (Modifier.isNative(mod)) {
+            sb.append("native,");
+        }
+        if (Modifier.isPrivate(mod)) {
+            sb.append("private,");
+        }
+        if (Modifier.isProtected(mod)) {
+            sb.append("protected,");
+        }
+        if (Modifier.isPublic(mod)) {
+            sb.append("public,");
+        }
+        if (Modifier.isStatic(mod)) {
+            sb.append("static,");
+        }
+        if (Modifier.isStrict(mod)) {
+            sb.append("strict,");
+        }
+        if (Modifier.isSynchronized(mod)) {
+            sb.append("synchronized,");
+        }
+        if (Modifier.isTransient(mod)) {
+            sb.append("transient,");
+        }
+        if (Modifier.isVolatile(mod)) {
+            sb.append("volatile,");
+        }
+        if (sb.length() > 0) {
+            sb.deleteCharAt(sb.length() - 1);
+        }
+        return sb.toString();
+    }
+
+
+    /**
+     * 获取匹配的class
+     * @param classes
+     * @param classPattern
+     * @return
+     */
+    //// TODO: 17/10/15 正则有待改善
+    public static List<Class> matchClass(Class[] classes, String classPattern){
+        List<Class> classList = new LinkedList<Class>();
+        if(classes == null){
+            return classList;
+        }
+        Pattern pattern = Pattern.compile(classPattern, Pattern.CASE_INSENSITIVE);
+        for(Class clazz: classes){
+            Matcher matcher = pattern.matcher(clazz.getName());
+            if(matcher.find()){
+                classList.add(clazz);
+            }
+        }
+        return classList;
+    }
 
 
     /**
