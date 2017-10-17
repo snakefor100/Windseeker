@@ -12,7 +12,8 @@ public enum QueryCommandEnum {
      * 监控JVM
      */
     JVM,
-    SEARCH_CLASS;
+    SEARCH_CLASS,
+    TRACE;
 
 
 }

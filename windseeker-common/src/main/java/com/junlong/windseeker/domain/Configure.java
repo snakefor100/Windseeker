@@ -12,7 +12,7 @@ public class Configure implements Serializable{
     private int connectTime;
     private String agentJarUrl;
     private String coreJarUrl;
-    private String WsServerLauncherClassUrl;
+    private String wsServerLauncherClassUrl;
     private String sessionId;
 
 
@@ -25,11 +25,11 @@ public class Configure implements Serializable{
     }
 
     public String getWsServerLauncherClassUrl() {
-        return WsServerLauncherClassUrl;
+        return wsServerLauncherClassUrl;
     }
 
     public void setWsServerLauncherClassUrl(String wsServerLauncherClassUrl) {
-        WsServerLauncherClassUrl = wsServerLauncherClassUrl;
+        this.wsServerLauncherClassUrl = wsServerLauncherClassUrl;
     }
 
     public String getTargetIp() {

@@ -1,7 +1,5 @@
 package com.junlong.windseeker.domain;
 
-import java.text.SimpleDateFormat;
-
 /**
  * Created by niujunlong on 17/9/8.
  */

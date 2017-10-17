@@ -10,13 +10,8 @@ import com.junlong.windseeker.utils.WsClassUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.instrument.Instrumentation;
-import java.lang.management.ClassLoadingMXBean;
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 

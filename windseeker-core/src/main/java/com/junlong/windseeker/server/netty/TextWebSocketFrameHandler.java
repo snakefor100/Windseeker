@@ -3,6 +3,7 @@ package com.junlong.windseeker.server.netty;
 import com.junlong.windseeker.command.Command;
 import com.junlong.windseeker.command.environment.JvmCommand;
 import com.junlong.windseeker.command.environment.SearchClassCommand;
+import com.junlong.windseeker.command.environment.TraceCommand;
 import com.junlong.windseeker.command.session.SessionCommand;
 import com.junlong.windseeker.domain.AppConstants;
 import com.junlong.windseeker.domain.QueryCommand;
@@ -72,6 +73,8 @@ public class TextWebSocketFrameHandler extends SimpleChannelInboundHandler<TextW
                    command = new JvmCommand();
                case SEARCH_CLASS:
                    command = new SearchClassCommand(queryCommand.getContent());
+               case TRACE:
+                   command = new TraceCommand();
                default:
                    break;
 

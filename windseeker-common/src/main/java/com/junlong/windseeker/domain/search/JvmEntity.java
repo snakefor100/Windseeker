@@ -394,11 +394,11 @@ public class JvmEntity {
         /**
          * 机器名
          */
-        private String MachineName;
+        private String machineName;
         /**
          * jvm启动时间
          */
-        private String JvmStartTime;
+        private String jvmStartTime;
         /**
          * 接口规范版本
          */
@@ -416,19 +416,19 @@ public class JvmEntity {
         private String libraryPath;
 
         public String getMachineName() {
-            return MachineName;
+            return machineName;
         }
 
         public void setMachineName(String machineName) {
-            MachineName = machineName;
+            this.machineName = machineName;
         }
 
         public String getJvmStartTime() {
-            return JvmStartTime;
+            return jvmStartTime;
         }
 
         public void setJvmStartTime(String jvmStartTime) {
-            JvmStartTime = jvmStartTime;
+            this.jvmStartTime = jvmStartTime;
         }
 
         public String getManagementSpecVersion() {

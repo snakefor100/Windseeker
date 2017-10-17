@@ -13,7 +13,7 @@ public class ServerConfig {
     private int connectTime;
     private String agentJarUrl;
     private String coreJarUrl;
-    private String WsServerLauncherClassUrl;
+    private String wsServerLauncherClassUrl;
 
     public int getConnectTime() {
         return connectTime;
@@ -40,10 +40,10 @@ public class ServerConfig {
     }
 
     public String getWsServerLauncherClassUrl() {
-        return WsServerLauncherClassUrl;
+        return wsServerLauncherClassUrl;
     }
 
     public void setWsServerLauncherClassUrl(String wsServerLauncherClassUrl) {
-        WsServerLauncherClassUrl = wsServerLauncherClassUrl;
+        this.wsServerLauncherClassUrl = wsServerLauncherClassUrl;
     }
 }
