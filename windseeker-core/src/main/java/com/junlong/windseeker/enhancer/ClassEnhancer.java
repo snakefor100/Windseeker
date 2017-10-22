@@ -1,6 +1,8 @@
 package com.junlong.windseeker.enhancer;
 
 
+import com.junlong.windseeker.command.asm.AdviceWeaver;
+import com.junlong.windseeker.server.session.DefaultSessionManager;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -35,6 +37,12 @@ import static org.objectweb.asm.ClassWriter.COMPUTE_MAXS;
  * Created by niujunlong on 17/9/12.
  */
 public class ClassEnhancer implements ClassFileTransformer {
+    private DefaultSessionManager.Session session;
+
+    public ClassEnhancer(DefaultSessionManager.Session session) {
+        this.session = session;
+    }
+
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
         System.out.println("转换:"+className);
@@ -47,7 +55,7 @@ public class ClassEnhancer implements ClassFileTransformer {
             //接受一个ClassVisitor子类进行字节码修改
             reader.accept(new TraceClassVisitor(writer, className), 8);
 
-          reader.accept(new AdviceWeaver(adviceId, isTracing, cr.getClassName(), asmMethodMatcher, affect, cw),EXPAND_FRAMES);
+          reader.accept(new AdviceWeaver(session.getSessionId(),reader.getClassName(),writer),EXPAND_FRAMES);
 
 
             //返回修改后的字节码流

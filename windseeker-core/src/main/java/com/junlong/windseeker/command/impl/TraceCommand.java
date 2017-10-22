@@ -21,7 +21,7 @@ public class TraceCommand implements Command {
             public void doAction(DefaultSessionManager.Session session) {
                 System.out.println(111);
                 Instrumentation inst = session.getInst();
-                inst.addTransformer(new ClassEnhancer(),true);
+                inst.addTransformer(new ClassEnhancer(session),true);
                 System.out.println(222);
                 List<Class> classList = WsClassUtils.matchClass(session.getInst().getAllLoadedClasses(), "TestImpl");
 
