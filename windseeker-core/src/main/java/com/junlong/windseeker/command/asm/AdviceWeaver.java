@@ -45,7 +45,7 @@ public class AdviceWeaver extends ClassVisitor implements Opcodes {
         final MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
 
         return new AdviceAdapter(ASM5, new JSRInlinerAdapter(mv, access, name, desc, signature, exceptions), access, name, desc) {
-
+            private Integer currentLineNumber;
             // -- Lebel for try...catch block
             private final Label beginLabel = new Label();
             private final Label endLabel = new Label();
@@ -85,15 +85,145 @@ public class AdviceWeaver extends ClassVisitor implements Opcodes {
             }
 
             @Override
-            public void visitMethodInsn(int i, String s, String s1, String s2, boolean b) {
-                LOG.info("visitMethodInsn");
-                super.visitMethodInsn(i, s, s1, s2, b);
+            public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
+                // 方法调用前通知
+                tracing(KEY_GREYS_ADVICE_BEFORE_INVOKING_METHOD, owner, name, desc);
+
+                final Label beginLabel = new Label();
+                final Label endLabel = new Label();
+                final Label finallyLabel = new Label();
+
+
+                mark(beginLabel);
+                super.visitMethodInsn(opcode, owner, name, desc, itf);
+                mark(endLabel);
+
+                // 方法调用后通知
+                tracing(KEY_GREYS_ADVICE_AFTER_INVOKING_METHOD, owner, name, desc);
+                goTo(finallyLabel);
+
+
+
+                catchException(beginLabel, endLabel, ASM_TYPE_THROWABLE);
+                tracing(KEY_GREYS_ADVICE_THROW_INVOKING_METHOD, owner, name, desc);
+
+                throwException();
+
+
+                mark(finallyLabel);
+
+            }
+            /**
+             * 加载方法调用跟踪通知所需参数数组(for before/after)
+             */
+            private void loadArrayForInvokeBeforeOrAfterTracing(String owner, String name, String desc) {
+                push(5);
+                newArray(ASM_TYPE_OBJECT);
+
+                dup();
+                push(0);
+                push(adviceId);
+                box(ASM_TYPE_INT);
+                arrayStore(ASM_TYPE_INTEGER);
+
+                if (null != currentLineNumber) {
+                    dup();
+                    push(1);
+                    push(currentLineNumber);
+                    box(ASM_TYPE_INT);
+                    arrayStore(ASM_TYPE_INTEGER);
+                }
+
+                dup();
+                push(2);
+                push(owner);
+                arrayStore(ASM_TYPE_STRING);
+
+                dup();
+                push(3);
+                push(name);
+                arrayStore(ASM_TYPE_STRING);
+
+                dup();
+                push(4);
+                push(desc);
+                arrayStore(ASM_TYPE_STRING);
+            }
+            /**
+             * 加载方法调用跟踪通知所需参数数组(for throw)
+             */
+            private void loadArrayForInvokeThrowTracing(String owner, String name, String desc) {
+                push(6);
+                newArray(ASM_TYPE_OBJECT);
+
+                dup();
+                push(0);
+                push(adviceId);
+                box(ASM_TYPE_INT);
+                arrayStore(ASM_TYPE_INTEGER);
+
+
+                if (null != currentLineNumber) {
+                    dup();
+                    push(1);
+                    push(currentLineNumber);
+                    box(ASM_TYPE_INT);
+                    arrayStore(ASM_TYPE_INTEGER);
+                }
+
+                dup();
+                push(2);
+                push(owner);
+                arrayStore(ASM_TYPE_STRING);
+
+                dup();
+                push(3);
+                push(name);
+                arrayStore(ASM_TYPE_STRING);
+
+                dup();
+                push(4);
+                push(desc);
+                arrayStore(ASM_TYPE_STRING);
+
+                dup2(); // e,a,e,a
+                swap(); // e,a,a,e
+                invokeVirtual(ASM_TYPE_OBJECT, Method.getMethod("Class getClass()"));
+                invokeVirtual(ASM_TYPE_CLASS, Method.getMethod("String getName()"));
+
+                // e,a,a,s
+                push(5); // e,a,a,s,4
+                swap();  // e,a,a,4,s
+                arrayStore(ASM_TYPE_STRING);
+
+                // e,a
             }
 
+            /*
+             * 跟踪代码
+             */
+            private void tracing(final int tracingType, final String owner, final String name, final String desc) {
+            LOG.info("tracing method!");
+                final StringBuilder append = new StringBuilder();
+
+                if (tracingType == KEY_GREYS_ADVICE_THROW_INVOKING_METHOD) {
+                    loadArrayForInvokeThrowTracing(owner, name, desc);
+                } else {
+                    loadArrayForInvokeBeforeOrAfterTracing(owner, name, desc);
+                }
+                loadAdviceMethod(tracingType);
+                swap();
+                push((Type) null);
+                swap();
+                invokeVirtual(ASM_TYPE_METHOD, ASM_METHOD_METHOD_INVOKE);
+                pop();
+
+            }
             @Override
-            public void visitLineNumber(int i, Label label) {
-                LOG.info("visitLineNumber {} {}",i,label.getClass().getCanonicalName());
-                super.visitLineNumber(i, label);
+            public void visitLineNumber(int line, Label label) {
+                LOG.info("visitLineNumber {} {}",line,label.getClass().getCanonicalName());
+                super.visitLineNumber(line, label);
+                currentLineNumber = line;
             }
 
             @Override
