@@ -1,9 +1,9 @@
 package com.junlong.windseeker.server.netty;
 
 import com.junlong.windseeker.command.Command;
-import com.junlong.windseeker.command.environment.JvmCommand;
-import com.junlong.windseeker.command.environment.SearchClassCommand;
-import com.junlong.windseeker.command.environment.TraceCommand;
+import com.junlong.windseeker.command.impl.JvmCommand;
+import com.junlong.windseeker.command.impl.SearchClassCommand;
+import com.junlong.windseeker.command.impl.TraceCommand;
 import com.junlong.windseeker.command.session.SessionCommand;
 import com.junlong.windseeker.domain.AppConstants;
 import com.junlong.windseeker.domain.QueryCommand;

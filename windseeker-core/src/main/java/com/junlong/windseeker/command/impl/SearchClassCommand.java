@@ -1,4 +1,4 @@
-package com.junlong.windseeker.command.environment;
+package com.junlong.windseeker.command.impl;
 
 import com.junlong.windseeker.command.Action;
 import com.junlong.windseeker.command.Command;

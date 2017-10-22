@@ -8,6 +8,9 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 
+import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
+import static org.objectweb.asm.ClassWriter.COMPUTE_MAXS;
+
 /**
  * 参考文章</br>
  * http://www.iteye.com/topic/1116696
@@ -40,9 +43,13 @@ public class ClassEnhancer implements ClassFileTransformer {
             //读取类的字节码流
             ClassReader reader = new ClassReader(classfileBuffer);
             //创建操作字节流值对象，ClassWriter.COMPUTE_MAXS:表示自动计算栈大小
-            ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_MAXS);
+            ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_FRAMES | COMPUTE_MAXS);
             //接受一个ClassVisitor子类进行字节码修改
             reader.accept(new TraceClassVisitor(writer, className), 8);
+
+          reader.accept(new AdviceWeaver(adviceId, isTracing, cr.getClassName(), asmMethodMatcher, affect, cw),EXPAND_FRAMES);
+
+
             //返回修改后的字节码流
             return writer.toByteArray();
         }
