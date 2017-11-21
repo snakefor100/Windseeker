@@ -15,27 +15,24 @@ public class TimeUtil {
     private static Map<String, Long> startTimes = new HashMap<String, Long>();
     private static Map<String, Long> endTimes   = new HashMap<String, Long>();
 
-    private TimeUtil() {
-    }
-
     public static long getStartTime(String key) {
 
         return startTimes.get(key);
     }
 
-    public static void setStartTime(String key) {
-        LOG.info("设置开始时间: {}",key);
-
-        startTimes.put(key, System.currentTimeMillis());
+    public static void setStartTime() {
+        LOG.info("设置开始时间: {}",11);
+        System.out.println("QQQQQQQQQQ");
+        startTimes.put("11", System.currentTimeMillis());
     }
 
     public static long getEndTime(String key) {
         return endTimes.get(key);
     }
 
-    public static void setEndTime(String key) {
-        LOG.info("设置结束时间: {}",key);
-        endTimes.put(key, System.currentTimeMillis());
+    public static void setEndTime() {
+        LOG.info("设置结束时间: {}",11);
+        endTimes.put("11", System.currentTimeMillis());
     }
 
     public static long getExclusiveTime(String key) {
@@ -45,9 +42,5 @@ public class TimeUtil {
         return exclusive;
     }
 
-    public static void main(String[] args) {
-        TimeUtil.setStartTime("11");
-        TimeUtil.setEndTime("11");
-        TimeUtil.getExclusiveTime("11");
-    }
+
 }

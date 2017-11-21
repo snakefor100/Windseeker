@@ -53,9 +53,9 @@ public class ClassEnhancer implements ClassFileTransformer {
             //创建操作字节流值对象，ClassWriter.COMPUTE_MAXS:表示自动计算栈大小
             ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_FRAMES | COMPUTE_MAXS);
             //接受一个ClassVisitor子类进行字节码修改
-            reader.accept(new TraceClassVisitor(writer, className), 8);
 
-          reader.accept(new AdviceWeaver(session.getSessionId(),reader.getClassName(),writer),EXPAND_FRAMES);
+
+          reader.accept(new AdviceWeaver(session,reader.getClassName(),writer),EXPAND_FRAMES);
 
 
             //返回修改后的字节码流

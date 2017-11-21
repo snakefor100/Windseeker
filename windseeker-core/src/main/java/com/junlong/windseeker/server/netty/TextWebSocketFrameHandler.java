@@ -90,6 +90,7 @@ public class TextWebSocketFrameHandler extends SimpleChannelInboundHandler<TextW
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        LOG.error("发生异常: ",cause);
         super.exceptionCaught(ctx, cause);
     }
 

@@ -36,25 +36,23 @@ public class TraceClassVisitor extends ClassVisitor implements Opcodes {
                 @Override
                 protected void onMethodEnter() {
                     System.out.println("AA");
-                    this.visitLdcInsn(key);
-                    this.visitMethodInsn(Opcodes.INVOKESTATIC, "com/junlong/windseeker/enhancer/TimeUtil", "setStartTime", "(Ljava/lang/String;)V", false);
+
+                    this.visitMethodInsn(Opcodes.INVOKESTATIC, "com/junlong/windseeker/enhancer/TimeUtil", "setStartTime", "()V");
                     System.out.println("AA1");
                 }
 
                 @Override
                 protected void onMethodExit(int i) {
                     System.out.println("BB");
-                    this.visitLdcInsn(key);
-                    this.visitMethodInsn(Opcodes.INVOKESTATIC, "com/junlong/windseeker/enhancer/TimeUtil", "setEndTime", "(Ljava/lang/String;)V", false);
+
+                    this.visitMethodInsn(Opcodes.INVOKESTATIC, "com/junlong/windseeker/enhancer/TimeUtil", "setStartTime", "()V");
                     //向栈中压入类名称
                     this.visitLdcInsn(className);
                     //向栈中压入方法名
                     this.visitLdcInsn(name);
                     //向栈中压入方法描述
                     this.visitLdcInsn(desc);
-                    //相当于com.blueware.agent.TimeUtil.getExclusiveTime("com/blueware/agent/TestTime","testTime");
-                    this.visitMethodInsn(Opcodes.INVOKESTATIC, "com/junlong/windseeker/enhancer/TimeUtil", "getExclusiveTime", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)J", false);
-                    System.out.println("BB1");
+                    this.visitMethodInsn(Opcodes.INVOKESTATIC, "com/junlong/windseeker/enhancer/TimeUtil", "setStartTime", "()V");
                 }
             };
         }

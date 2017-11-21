@@ -19,12 +19,9 @@ public class TraceCommand implements Command {
         return new Action() {
             @Override
             public void doAction(DefaultSessionManager.Session session) {
-                System.out.println(111);
                 Instrumentation inst = session.getInst();
                 inst.addTransformer(new ClassEnhancer(session),true);
-                System.out.println(222);
                 List<Class> classList = WsClassUtils.matchClass(session.getInst().getAllLoadedClasses(), "TestImpl");
-
                 Class aClass = classList.get(0);
                 System.out.println("获取到的class"+aClass);
                 try {

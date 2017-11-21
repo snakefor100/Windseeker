@@ -1,12 +1,17 @@
 package com.junlong.windseeker.command.asm;
 
+import com.junlong.windseeker.server.session.DefaultSessionManager;
+import com.junlong.windseeker.utils.JsonUtils;
+
 import org.apache.commons.lang3.StringUtils;
-import org.objectweb.asm.*;
-import org.objectweb.asm.commons.AdviceAdapter;
-import org.objectweb.asm.commons.JSRInlinerAdapter;
-import org.objectweb.asm.commons.Method;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.netty.channel.Channel;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 
 /**
  * Created by niujunlong on 2017/10/21.
@@ -16,399 +21,56 @@ public class AdviceWeaver extends ClassVisitor implements Opcodes {
     private final String adviceId;
     private final String internalClassName;
     private final String javaClassName;
+    private final DefaultSessionManager.Session session;
+    private final Channel channel;
 
-    /**
-     * 构建通知编织器
-     * @param adviceId
-     * @param internalClassName
-     * @param cv
-     */
+
     public AdviceWeaver(
-            final String adviceId,
+            final DefaultSessionManager.Session session,
             final String internalClassName,
             final ClassVisitor cv) {
         super(ASM5, cv);
-        this.adviceId = adviceId;
+        this.session = session;
+        this.channel = session.getChannel();
+        this.adviceId = session.getSessionId();
         this.internalClassName = internalClassName;
         this.javaClassName = StringUtils.replace(internalClassName, "/", ".");
     }
 
-
     @Override
-    public MethodVisitor visitMethod(
-            final int access,
-            final String name,
-            final String desc,
-            final String signature,
-            final String[] exceptions) {
-        LOG.info("adviceweaver: visiMethod");
-        final MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-
-        return new AdviceAdapter(ASM5, new JSRInlinerAdapter(mv, access, name, desc, signature, exceptions), access, name, desc) {
-            private Integer currentLineNumber;
-            // -- Lebel for try...catch block
-            private final Label beginLabel = new Label();
-            private final Label endLabel = new Label();
-
-            // -- KEY of advice --
-            private final int KEY_GREYS_ADVICE_BEFORE_METHOD = 0;
-            private final int KEY_GREYS_ADVICE_RETURN_METHOD = 1;
-            private final int KEY_GREYS_ADVICE_THROWS_METHOD = 2;
-            private final int KEY_GREYS_ADVICE_BEFORE_INVOKING_METHOD = 3;
-            private final int KEY_GREYS_ADVICE_AFTER_INVOKING_METHOD = 4;
-            private final int KEY_GREYS_ADVICE_THROW_INVOKING_METHOD = 5;
-
-
-            // -- KEY of ASM_TYPE or ASM_METHOD --
-            private final Type ASM_TYPE_OBJECT = Type.getType(Object.class);
-            private final Type ASM_TYPE_OBJECT_ARRAY = Type.getType(Object[].class);
-            private final Type ASM_TYPE_CLASS = Type.getType(Class.class);
-            private final Type ASM_TYPE_INTEGER = Type.getType(Integer.class);
-            private final Type ASM_TYPE_CLASS_LOADER = Type.getType(ClassLoader.class);
-            private final Type ASM_TYPE_STRING = Type.getType(String.class);
-            private final Type ASM_TYPE_THROWABLE = Type.getType(Throwable.class);
-            private final Type ASM_TYPE_INT = Type.getType(int.class);
-            private final Type ASM_TYPE_METHOD = Type.getType(java.lang.reflect.Method.class);
-            private final Method ASM_METHOD_METHOD_INVOKE = Method.getMethod("Object invoke(Object,Object[])");
-
-
-            @Override
-            public void visitEnd() {
-                LOG.info("visitEnd");
-                super.visitEnd();
-            }
-
-            @Override
-            public void visitTryCatchBlock(Label label, Label label1, Label label2, String s) {
-                LOG.info("visitTryCatchBlock");
-                super.visitTryCatchBlock(label, label1, label2, s);
-            }
-
-            @Override
-            public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
-                // 方法调用前通知
-                tracing(KEY_GREYS_ADVICE_BEFORE_INVOKING_METHOD, owner, name, desc);
-
-                final Label beginLabel = new Label();
-                final Label endLabel = new Label();
-                final Label finallyLabel = new Label();
-
-
-                mark(beginLabel);
-                super.visitMethodInsn(opcode, owner, name, desc, itf);
-                mark(endLabel);
-
-                // 方法调用后通知
-                tracing(KEY_GREYS_ADVICE_AFTER_INVOKING_METHOD, owner, name, desc);
-                goTo(finallyLabel);
-
-
-
-                catchException(beginLabel, endLabel, ASM_TYPE_THROWABLE);
-                tracing(KEY_GREYS_ADVICE_THROW_INVOKING_METHOD, owner, name, desc);
-
-                throwException();
-
-
-                mark(finallyLabel);
-
-            }
-            /**
-             * 加载方法调用跟踪通知所需参数数组(for before/after)
-             */
-            private void loadArrayForInvokeBeforeOrAfterTracing(String owner, String name, String desc) {
-                push(5);
-                newArray(ASM_TYPE_OBJECT);
-
-                dup();
-                push(0);
-                push(adviceId);
-                box(ASM_TYPE_INT);
-                arrayStore(ASM_TYPE_INTEGER);
-
-                if (null != currentLineNumber) {
-                    dup();
-                    push(1);
-                    push(currentLineNumber);
-                    box(ASM_TYPE_INT);
-                    arrayStore(ASM_TYPE_INTEGER);
-                }
-
-                dup();
-                push(2);
-                push(owner);
-                arrayStore(ASM_TYPE_STRING);
-
-                dup();
-                push(3);
-                push(name);
-                arrayStore(ASM_TYPE_STRING);
-
-                dup();
-                push(4);
-                push(desc);
-                arrayStore(ASM_TYPE_STRING);
-            }
-            /**
-             * 加载方法调用跟踪通知所需参数数组(for throw)
-             */
-            private void loadArrayForInvokeThrowTracing(String owner, String name, String desc) {
-                push(6);
-                newArray(ASM_TYPE_OBJECT);
-
-                dup();
-                push(0);
-                push(adviceId);
-                box(ASM_TYPE_INT);
-                arrayStore(ASM_TYPE_INTEGER);
-
-
-                if (null != currentLineNumber) {
-                    dup();
-                    push(1);
-                    push(currentLineNumber);
-                    box(ASM_TYPE_INT);
-                    arrayStore(ASM_TYPE_INTEGER);
-                }
-
-                dup();
-                push(2);
-                push(owner);
-                arrayStore(ASM_TYPE_STRING);
-
-                dup();
-                push(3);
-                push(name);
-                arrayStore(ASM_TYPE_STRING);
-
-                dup();
-                push(4);
-                push(desc);
-                arrayStore(ASM_TYPE_STRING);
-
-                dup2(); // e,a,e,a
-                swap(); // e,a,a,e
-                invokeVirtual(ASM_TYPE_OBJECT, Method.getMethod("Class getClass()"));
-                invokeVirtual(ASM_TYPE_CLASS, Method.getMethod("String getName()"));
-
-                // e,a,a,s
-                push(5); // e,a,a,s,4
-                swap();  // e,a,a,4,s
-                arrayStore(ASM_TYPE_STRING);
-
-                // e,a
-            }
-
-            /*
-             * 跟踪代码
-             */
-            private void tracing(final int tracingType, final String owner, final String name, final String desc) {
-            LOG.info("tracing method!");
-                final StringBuilder append = new StringBuilder();
-
-                if (tracingType == KEY_GREYS_ADVICE_THROW_INVOKING_METHOD) {
-                    loadArrayForInvokeThrowTracing(owner, name, desc);
-                } else {
-                    loadArrayForInvokeBeforeOrAfterTracing(owner, name, desc);
-                }
-                loadAdviceMethod(tracingType);
-                swap();
-                push((Type) null);
-                swap();
-                invokeVirtual(ASM_TYPE_METHOD, ASM_METHOD_METHOD_INVOKE);
-                pop();
-
-            }
-            @Override
-            public void visitLineNumber(int line, Label label) {
-                LOG.info("visitLineNumber {} {}",line,label.getClass().getCanonicalName());
-                super.visitLineNumber(line, label);
-                currentLineNumber = line;
-            }
-
-            @Override
-            public void visitMaxs(int i, int i1) {
-                LOG.info("visitMaxs {}");
-                super.visitMaxs(i, i1);
-            }
-
-            @Override
-            public void visitInsn(int i) {
-                LOG.info("visitInsn {}");
-                super.visitInsn(i);
-            }
-
-            @Override
-            protected void onMethodEnter() {
-                LOG.info("onMethodEnter 1");
-                // 加载before方法
-                loadAdviceMethod(KEY_GREYS_ADVICE_BEFORE_METHOD);
-                LOG.info("onMethodEnter 2");
-                // 推入Method.invoke()的第一个参数
-                push((Type) null);
-                LOG.info("onMethodEnter 3");
-                // 方法参数
-                loadArrayForBefore();
-                LOG.info("onMethodEnter 4");
-                // 调用方法
-                invokeVirtual(ASM_TYPE_METHOD, ASM_METHOD_METHOD_INVOKE);
-                LOG.info("onMethodEnter 5");
-                pop();
-                LOG.info("onMethodEnter 6");
-                mark(beginLabel);
-                LOG.info("onMethodEnter 7");
-            }
-
-            /**
-             * 加载before通知参数数组
-             */
-            private void loadArrayForBefore() {
-                push(7);
-                newArray(ASM_TYPE_OBJECT);
-
-                dup();
-                push(0);
-                push(adviceId);
-                box(ASM_TYPE_INT);
-                arrayStore(ASM_TYPE_INTEGER);
-
-                dup();
-                push(1);
-                loadClassLoader();
-                arrayStore(ASM_TYPE_CLASS_LOADER);
-
-                dup();
-                push(2);
-                push(javaClassName);
-                arrayStore(ASM_TYPE_STRING);
-
-                dup();
-                push(3);
-                push(name);
-                arrayStore(ASM_TYPE_STRING);
-
-                dup();
-                push(4);
-                push(desc);
-                arrayStore(ASM_TYPE_STRING);
-
-                dup();
-                push(5);
-                loadThisOrPushNullIfIsStatic();
-                arrayStore(ASM_TYPE_OBJECT);
-
-                dup();
-                push(6);
-                loadArgArray();
-                arrayStore(ASM_TYPE_OBJECT_ARRAY);
-            }
-
-
-            /**
-             * 加载this/null
-             */
-            private void loadThisOrPushNullIfIsStatic() {
-                if (isStaticMethod()) {
-                    push((Type) null);
-                } else {
-                    loadThis();
-                }
-            }
-
-
-            /**
-             * 是否静态方法
-             * @return true:静态方法 / false:非静态方法
-             */
-            private boolean isStaticMethod() {
-                return (methodAccess & ACC_STATIC) != 0;
-            }
-
-            /**
-             * 加载ClassLoader<br/>
-             * 这里分开静态方法中ClassLoader的获取以及普通方法中ClassLoader的获取
-             * 主要是性能上的考虑
-             */
-            private void loadClassLoader() {
-
-                if (this.isStaticMethod()) {
-
-//                    // fast enhance
-//                    if (GlobalOptions.isEnableFastEnhance) {
-//                        visitLdcInsn(Type.getType(String.format("L%s;", internalClassName)));
-//                        visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "getClassLoader", "()Ljava/lang/ClassLoader;", false);
-//                    }
-
-                    // normal enhance
-//                    else {
-
-                    // 这里不得不用性能极差的Class.forName()来完成类的获取,因为有可能当前这个静态方法在执行的时候
-                    // 当前类并没有完成实例化,会引起JVM对class文件的合法性校验失败
-                    // 未来我可能会在这一块考虑性能优化,但对于当前而言,功能远远重要于性能,也就不打算折腾这么复杂了
-                    visitLdcInsn(javaClassName);
-                    invokeStatic(ASM_TYPE_CLASS, Method.getMethod("Class forName(String)"));
-                    invokeVirtual(ASM_TYPE_CLASS, Method.getMethod("ClassLoader getClassLoader()"));
-//                    }
-
-                } else {
-                    loadThis();
-                    invokeVirtual(ASM_TYPE_OBJECT, Method.getMethod("Class getClass()"));
-                    invokeVirtual(ASM_TYPE_CLASS, Method.getMethod("ClassLoader getClassLoader()"));
-                }
-
-            }
-
-            @Override
-            protected void onMethodExit(int i) {
-                LOG.info("onMethodExit");
-                super.onMethodExit(i);
-            }
-
-            /**
-             * 加载通知方法
-             * @param keyOfMethod 通知方法KEY
-             */
-            private void loadAdviceMethod(int keyOfMethod) {
-
-                switch (keyOfMethod) {
-
-                    case KEY_GREYS_ADVICE_BEFORE_METHOD: {
-                        LOG.info("loadAdviceMethod");
-                        break;
-                    }
-
-                    case KEY_GREYS_ADVICE_RETURN_METHOD: {
-                        LOG.info("loadAdviceMethod");
-                        break;
-                    }
-
-                    case KEY_GREYS_ADVICE_THROWS_METHOD: {
-                        LOG.info("loadAdviceMethod");
-                        break;
-                    }
-
-                    case KEY_GREYS_ADVICE_BEFORE_INVOKING_METHOD: {
-                        LOG.info("loadAdviceMethod");
-                        break;
-                    }
-
-                    case KEY_GREYS_ADVICE_AFTER_INVOKING_METHOD: {
-                        LOG.info("loadAdviceMethod");
-                        break;
-                    }
-
-                    case KEY_GREYS_ADVICE_THROW_INVOKING_METHOD: {
-                        LOG.info("loadAdviceMethod");
-                        break;
-                    }
-
-                    default: {
-                        throw new IllegalArgumentException("illegal keyOfMethod=" + keyOfMethod);
-                    }
-
-                }
-
-            }
-        };
+    public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature, final String[] exceptions) {
+        MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);
+
+        if("<init>".equals(name) || !name.equals("add")){
+            System.out.println("非监控方法");
+            return mv;
+        }
+        System.out.println("监控方法");
+        return new AopMethod(this.api,mv);
     }
+
+    class AopMethod extends MethodVisitor implements Opcodes {
+        public AopMethod(int api, MethodVisitor mv) {
+            super(api, mv);
+        }
+
+        @Override
+        public void visitCode() {
+            super.visitCode();
+            System.out.println("方法开始!");
+            this.visitMethodInsn(INVOKESTATIC, "com/junlong/windseeker/enhancer/TimeUtil", "setStartTime", "()V",false);
+        }
+
+        @Override
+        public void visitInsn(int opcode) {
+            System.out.println("方法结束 :"+opcode);
+            if (opcode == RETURN) {//在返回之前安插after 代码。
+                mv.visitMethodInsn(INVOKESTATIC, "com/junlong/windseeker/enhancer/TimeUtil", "setEndTime", "()V",false);
+            }
+            channel.writeAndFlush(new TextWebSocketFrame(JsonUtils.toString("ff")));
+            super.visitInsn(opcode);
+
+        }
+    }
+
 }
