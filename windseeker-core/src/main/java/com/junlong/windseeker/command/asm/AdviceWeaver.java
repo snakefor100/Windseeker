@@ -5,8 +5,10 @@ import com.junlong.windseeker.utils.JsonUtils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.commons.AdviceAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,12 +43,29 @@ public class AdviceWeaver extends ClassVisitor implements Opcodes {
     public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature, final String[] exceptions) {
         MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);
 
-        if("<init>".equals(name) || !name.equals("add")){
-            System.out.println("非监控方法");
-            return mv;
-        }
-        System.out.println("监控方法");
-        return new AopMethod(this.api,mv);
+
+
+        mv =  new AdviceAdapter(ASM5,mv,access,name,desc){
+
+
+            @Override
+            protected void onMethodEnter() {
+                System.out.println(access+"_"+name+"_"+desc+"_"+signature+"_"+exceptions);
+                mv.visitMethodInsn(INVOKESTATIC, "com/junlong/windseeker/enhancer/TimeUtil", "setStartTime", "()V",false);
+                super.onMethodEnter();
+            }
+
+            @Override
+            protected void onMethodExit(int i) {
+                LOG.info("方法退出");
+                mv.visitMethodInsn(INVOKESTATIC, "com/junlong/windseeker/enhancer/TimeUtil", "setEndTime", "()V",false);
+                super.onMethodExit(i);
+            }
+
+
+        };
+
+        return mv;
     }
 
     class AopMethod extends MethodVisitor implements Opcodes {
