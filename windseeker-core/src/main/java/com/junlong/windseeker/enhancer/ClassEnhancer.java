@@ -19,7 +19,7 @@ import static org.objectweb.asm.ClassWriter.COMPUTE_MAXS;
  * http://xj84.iteye.com/blog/1221105
  * http://blog.csdn.net/youling_lh/article/details/9738993
  * https://my.oschina.net/u/1166271/blog/163637 @import
- *
+ *http://blog.h5min.cn/axman/article/details/4285759
  * ASM文档:http://download.forge.objectweb.org/asm/asm4-guide.pdf
  *
  *

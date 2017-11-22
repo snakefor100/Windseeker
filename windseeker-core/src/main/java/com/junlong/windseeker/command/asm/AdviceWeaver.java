@@ -5,7 +5,6 @@ import com.junlong.windseeker.utils.JsonUtils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.AdviceAdapter;
@@ -44,22 +43,68 @@ public class AdviceWeaver extends ClassVisitor implements Opcodes {
         MethodVisitor mv = cv.visitMethod(access, name, desc, signature, exceptions);
 
 
-
-        mv =  new AdviceAdapter(ASM5,mv,access,name,desc){
+        mv = new AdviceAdapter(ASM5, mv, access, name, desc) {
 
 
             @Override
             protected void onMethodEnter() {
                 System.out.println(access+"_"+name+"_"+desc+"_"+signature+"_"+exceptions);
                 mv.visitMethodInsn(INVOKESTATIC, "com/junlong/windseeker/enhancer/TimeUtil", "setStartTime", "()V",false);
+
+
+                System.out.println(access + "_" + name + "_" + desc + "_" + signature + "_" + exceptions);
+//                mv.visitMethodInsn(INVOKESTATIC, "com/junlong/windseeker/enhancer/TimeUtil", "setStartTime", "()V",false);
+                visitLdcInsn(javaClassName);
+                visitLdcInsn(name);
+                loadArgArray();
+
+                mv.visitMethodInsn(Opcodes.INVOKESTATIC, "com/junlong/windseeker/enhancer/MethodAspect", "beforeMethod", "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)V", false);
+
+
+
                 super.onMethodEnter();
             }
 
             @Override
-            protected void onMethodExit(int i) {
+            protected void onMethodExit(int opcode) {
                 LOG.info("方法退出");
-                mv.visitMethodInsn(INVOKESTATIC, "com/junlong/windseeker/enhancer/TimeUtil", "setEndTime", "()V",false);
-                super.onMethodExit(i);
+//                visitLdcInsn(javaClassName);
+//                visitLdcInsn(name); //前一篇文章我们只用了方法的sortName,真正实现时应该用FullName,因为
+//                //方法有重载，只凭sortName不能限定到某一个方法。
+//                visitLdcInsn(String.valueOf(opcode));
+//                int localVarCnt = 0;
+//                LOG.info("nextLocal:"+nextLocal + ",firstLocal:"+firstLocal+",差:"+localVarCnt);
+//                if(nextLocal > firstLocal) {
+//                    localVarCnt = nextLocal - firstLocal;
+//                    LOG.info("nextLocal:"+nextLocal + ",firstLocal:"+firstLocal+",差:"+localVarCnt);
+//                    Type OBJECT_TYPE = Type.getObjectType("java/lang/Object");
+//                    push(localVarCnt);
+//                    newArray(OBJECT_TYPE);
+//                    for (int i = 0; i < localVarCnt; i++)
+//                    {
+//                        int index = super.firstLocal + i;
+//                        dup();
+//                        push(i);
+//                        loadLocal(index);
+//                        box(getLocalType(index));
+//                        arrayStore(OBJECT_TYPE);
+//                    }
+//                }else{
+//                    visitInsn(ACONST_NULL); //为了占用一个栈位置。
+//                }
+//                int argsCnt = localVarCnt;
+//
+//                //从方法签名可以分析出参数个数。
+//                if(argsCnt > 0){
+//                    loadArgArray();
+//                }
+//                else{
+//                    visitInsn(ACONST_NULL); //为了占用一个栈位置。
+//                }
+//                visitMethodInsn(Opcodes.INVOKESTATIC, "MethodAspect","send",
+//                        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;[Ljava/lang/Object;)V",false);
+
+                super.onMethodExit(opcode);
             }
 
 
@@ -77,14 +122,14 @@ public class AdviceWeaver extends ClassVisitor implements Opcodes {
         public void visitCode() {
             super.visitCode();
             System.out.println("方法开始!");
-            this.visitMethodInsn(INVOKESTATIC, "com/junlong/windseeker/enhancer/TimeUtil", "setStartTime", "()V",false);
+            this.visitMethodInsn(INVOKESTATIC, "com/junlong/windseeker/enhancer/TimeUtil", "setStartTime", "()V", false);
         }
 
         @Override
         public void visitInsn(int opcode) {
-            System.out.println("方法结束 :"+opcode);
+            System.out.println("方法结束 :" + opcode);
             if (opcode == RETURN) {//在返回之前安插after 代码。
-                mv.visitMethodInsn(INVOKESTATIC, "com/junlong/windseeker/enhancer/TimeUtil", "setEndTime", "()V",false);
+                mv.visitMethodInsn(INVOKESTATIC, "com/junlong/windseeker/enhancer/TimeUtil", "setEndTime", "()V", false);
             }
             channel.writeAndFlush(new TextWebSocketFrame(JsonUtils.toString("ff")));
             super.visitInsn(opcode);
