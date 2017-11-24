@@ -28,26 +28,51 @@ public class MethodAspect {
 
     public static void beforeMethod(String className,String method,Object[] args){
         try {
-            LOG.info("进入方法切面beforeMethod:"+className+"-"+method+"-"+objectMapper.writeValueAsString(args));
+            String time = String.valueOf(System.currentTimeMillis());
+            LOG.info("进入方法切面beforeMethod:"+className+"-"+method+"-"+objectMapper.writeValueAsString(args)+"-"+time);
 
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
+    }
+    public static void  testReturn(Object result){
+
+            LOG.info("testReturn:"+result);
+
     }
 
 
     public static void afterMethod(String className,String method,String opCode,Object[] args){
         try {
-            LOG.info("进入方法切面 After:"+className+"-"+method+"-"+objectMapper.writeValueAsString(args));
+            String time = String.valueOf(System.currentTimeMillis());
+            LOG.info("进入方法切面 After:"+className+"-"+method+"-"+opCode+"-"+objectMapper.writeValueAsString(args)+"-"+time);
 
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
     }
 
+    public static void test(String className,String method,String opCode,Object[] args){
+        try {
+            String time = String.valueOf(System.currentTimeMillis());
+            LOG.info("进入方法切面 test:"+className+"-"+method+"-"+opCode+"-"+objectMapper.writeValueAsString(args)+"-"+time);
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void testType(String type){
+
+            LOG.info("testType:"+type);
+
+
+    }
+
+
     public static void methodError(String className,String method,String opCode,Object[] args){
         try {
-            LOG.info("进入方法切面 Error:"+className+"-"+method+"-"+objectMapper.writeValueAsString(args));
+            String time = String.valueOf(System.currentTimeMillis());
+            LOG.info("进入方法切面 Error:"+className+"-"+method+"-"+objectMapper.writeValueAsString(args)+"-"+time);
 
         } catch (JsonProcessingException e) {
             e.printStackTrace();

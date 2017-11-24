@@ -9,6 +9,8 @@ import org.objectweb.asm.ClassWriter;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
 import static org.objectweb.asm.ClassWriter.COMPUTE_MAXS;
@@ -21,6 +23,7 @@ import static org.objectweb.asm.ClassWriter.COMPUTE_MAXS;
  * https://my.oschina.net/u/1166271/blog/163637 @import
  *http://blog.h5min.cn/axman/article/details/4285759
  * ASM文档:http://download.forge.objectweb.org/asm/asm4-guide.pdf
+ * http://m.blog.csdn.net/axman/article/details/4268189
  *
  *
  *  addTransformer/ removeTransformer：注册/删除ClassFileTransformer
@@ -39,6 +42,7 @@ import static org.objectweb.asm.ClassWriter.COMPUTE_MAXS;
 public class ClassEnhancer implements ClassFileTransformer {
     private DefaultSessionManager.Session session;
 
+    public static Map m = new HashMap();
     public ClassEnhancer(DefaultSessionManager.Session session) {
         this.session = session;
     }
@@ -48,6 +52,9 @@ public class ClassEnhancer implements ClassFileTransformer {
         System.out.println("转换:"+className);
         if(className != null && className.equals("com/junlong/test/TestImpl")){
             System.out.println("进入 "+className);
+
+
+
             //读取类的字节码流
             ClassReader reader = new ClassReader(classfileBuffer);
             //创建操作字节流值对象，ClassWriter.COMPUTE_MAXS:表示自动计算栈大小

@@ -37,9 +37,9 @@ public class VirtuaMachineController {
         return BaseResponse.build(null);
     }
 
-    @GetMapping(value = "/close")
-    public BaseResponse closeTargetServer(int port){
-        VirtuaMachineUtils.close(port);
+    @RequestMapping(value = "/close")
+    public BaseResponse closeTargetServer(){
+        VirtuaMachineUtils.close(9999);
         return BaseResponse.build(null);
     }
 }

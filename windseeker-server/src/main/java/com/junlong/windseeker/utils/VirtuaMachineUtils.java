@@ -45,8 +45,9 @@ public class VirtuaMachineUtils {
                 attach = VirtualMachine.attach(vm);
             }
             LOG.info("传递agent参数", JsonUtils.toString(configure));
-            attach.loadAgent(configure.getAgentJarUrl(), JsonUtils.toString(configure));
             vmMap.put(configure.getTargetPort(), attach);
+            attach.loadAgent(configure.getAgentJarUrl(), JsonUtils.toString(configure));
+
         } catch (Exception e) {
             attach.detach();
             LOG.error("VM load agent 出现异常", e);
@@ -57,7 +58,7 @@ public class VirtuaMachineUtils {
     public static void close(int port) {
         try {
             VirtualMachine vm = vmMap.get(port);
-            if (vm != null) {
+            if (vm == null) {
                 return;
             }
             vm.detach();

@@ -53,6 +53,15 @@
             alert("连接没有开启.");
         }
     }
+
+ $(function () {
+     $("#closeButton").click(function(){
+
+         $.post("/vm/close",function (data,status) {
+             alert("Data: " + data + "nStatus: " + status);
+         })
+     });
+ })
 </script>
 <form onsubmit="return false;">
     <h3>WebSocket 聊天室：</h3>
@@ -60,8 +69,7 @@
     <br>
     <input type="text" name="message" style="width: 300px" value="Welcome to www.baidu.com">
     <input type="button" value="发送消息" onclick="send(this.form.message.value)">
-    <input type="button" onclick="javascript:document.getElementById('responseText').value=''"
-           value="清空聊天记录">
+    <input type="button" id="closeButton" value="清空聊天记录">
 </form>
 <br>
 <br>

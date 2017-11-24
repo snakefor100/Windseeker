@@ -1,13 +1,17 @@
 package com.junlong.windseeker.command.asm;
 
+import com.junlong.windseeker.enhancer.MethodAspect;
 import com.junlong.windseeker.server.session.DefaultSessionManager;
 import com.junlong.windseeker.utils.JsonUtils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.AdviceAdapter;
+import org.objectweb.asm.commons.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,14 +52,15 @@ public class AdviceWeaver extends ClassVisitor implements Opcodes {
 
             @Override
             protected void onMethodEnter() {
-                System.out.println(access+"_"+name+"_"+desc+"_"+signature+"_"+exceptions);
-                mv.visitMethodInsn(INVOKESTATIC, "com/junlong/windseeker/enhancer/TimeUtil", "setStartTime", "()V",false);
+//                System.out.println(access+"_"+name+"_"+desc+"_"+signature+"_"+exceptions);
+//                mv.visitMethodInsn(INVOKESTATIC, "com/junlong/windseeker/enhancer/TimeUtil", "setStartTime", "()V",false);
+//
 
-
-                System.out.println(access + "_" + name + "_" + desc + "_" + signature + "_" + exceptions);
+//                System.out.println(access + "_" + name + "_" + desc + "_" + signature + "_" + exceptions);
 //                mv.visitMethodInsn(INVOKESTATIC, "com/junlong/windseeker/enhancer/TimeUtil", "setStartTime", "()V",false);
                 visitLdcInsn(javaClassName);
                 visitLdcInsn(name);
+
                 loadArgArray();
 
                 mv.visitMethodInsn(Opcodes.INVOKESTATIC, "com/junlong/windseeker/enhancer/MethodAspect", "beforeMethod", "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)V", false);
@@ -65,9 +70,46 @@ public class AdviceWeaver extends ClassVisitor implements Opcodes {
                 super.onMethodEnter();
             }
 
+
+
             @Override
             protected void onMethodExit(int opcode) {
                 LOG.info("方法退出");
+
+
+
+//                visitLdcInsn(javaClassName);
+//                visitLdcInsn(name);
+//                visitLdcInsn(String.valueOf(opcode));
+//                loadArgArray();
+//
+//                if(opcode == Opcodes.RETURN){
+//                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, "com/junlong/windseeker/enhancer/MethodAspect", "afterMethod", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)V", false);
+//
+//                }else if(opcode == Opcodes.ATHROW){
+//                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, "com/junlong/windseeker/enhancer/MethodAspect", "methodError", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)V", false);
+//
+//                }else {
+//
+//                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, "com/junlong/windseeker/enhancer/MethodAspect", "test", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)V", false);
+//
+//                }
+
+
+
+
+
+
+
+
+
+
+//                mv.visitMethodInsn(Opcodes.INVOKESTATIC, "com/junlong/windseeker/enhancer/MethodAspect", "beforeMethod", "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)V", false);
+
+
+
+
+
 //                visitLdcInsn(javaClassName);
 //                visitLdcInsn(name); //前一篇文章我们只用了方法的sortName,真正实现时应该用FullName,因为
 //                //方法有重载，只凭sortName不能限定到某一个方法。
